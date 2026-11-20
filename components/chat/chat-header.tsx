@@ -1,23 +1,32 @@
 "use client";
 
-import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { Sparkles, MessageSquarePlus, Loader2, BookOpen } from "lucide-react";
+import { Loader2, Menu, PanelLeftClose } from "lucide-react";
 
 type ConnectionStatus = "disconnected" | "connecting" | "connected";
 
 interface ChatHeaderProps {
-  onNewChat: () => void;
   connectionStatus: ConnectionStatus;
+  sidebarOpen: boolean;
+  onToggleSidebar: () => void;
 }
 
-export function ChatHeader({ onNewChat, connectionStatus }: ChatHeaderProps) {
+export function ChatHeader({
+  connectionStatus,
+  sidebarOpen,
+  onToggleSidebar,
+}: ChatHeaderProps) {
   return (
-    <header className="flex h-14 shrink-0 items-center justify-between border-b border-border bg-background/95 px-4 backdrop-blur supports-backdrop-filter:bg-background/80">
+    <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border bg-background/95 px-4 backdrop-blur supports-backdrop-filter:bg-background/80">
+      <button
+        type="button"
+        onClick={onToggleSidebar}
+        className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+        aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
+      >
+        {sidebarOpen ? <PanelLeftClose className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+      </button>
       <div className="flex items-center gap-3">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-linear-to-br from-primary to-primary/80 shadow-sm">
-          <Sparkles className="h-4 w-4 text-primary-foreground" />
-        </div>
         <h1 className="text-base font-semibold text-foreground">SuperAgent</h1>
         <span
           className={cn(
@@ -43,25 +52,6 @@ export function ChatHeader({ onNewChat, connectionStatus }: ChatHeaderProps) {
           {connectionStatus === "connecting" && "Connecting..."}
           {connectionStatus === "disconnected" && "Disconnected"}
         </span>
-      </div>
-
-      <div className="flex items-center gap-1">
-        <Link
-          href="/rag"
-          className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-          aria-label="Knowledge base"
-        >
-          <BookOpen className="h-4 w-4" />
-          <span className="hidden sm:inline">Knowledge base</span>
-        </Link>
-        <button
-          onClick={onNewChat}
-          className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-          aria-label="New chat"
-        >
-          <MessageSquarePlus className="h-4 w-4" />
-          <span className="hidden sm:inline">New chat</span>
-        </button>
       </div>
     </header>
   );

@@ -15,9 +15,10 @@ interface ChatAreaProps {
   onSend: (message: string) => void;
   onFileSelect?: (file: File) => void;
   onSuggestionClick: (suggestion: string) => void;
-  onNewChat: () => void;
   connectionStatus: ConnectionStatus;
   onAuthCompleted?: () => void;
+  sidebarOpen: boolean;
+  onToggleSidebar: () => void;
 }
 
 export function ChatArea({
@@ -27,13 +28,18 @@ export function ChatArea({
   onSend,
   onFileSelect,
   onSuggestionClick,
-  onNewChat,
   connectionStatus,
   onAuthCompleted,
+  sidebarOpen,
+  onToggleSidebar,
 }: ChatAreaProps) {
   return (
     <div className="flex flex-1 flex-col overflow-hidden bg-background chat-surface">
-      <ChatHeader onNewChat={onNewChat} connectionStatus={connectionStatus} />
+      <ChatHeader
+        connectionStatus={connectionStatus}
+        sidebarOpen={sidebarOpen}
+        onToggleSidebar={onToggleSidebar}
+      />
 
       {hasConversation ? (
         <>

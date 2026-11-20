@@ -70,18 +70,23 @@ export async function deleteDocument(
 
 // ── PDF Upload & List ──
 
-export async function uploadPdf(file: File): Promise<PDFUploadResponse> {
+export async function uploadPdf(file: File, userId: string): Promise<PDFUploadResponse> {
   const formData = new FormData();
   formData.append("file", file);
 
-  const res = await fetch(`${API_BASE_URL}/rag/upload-pdf`, {
+  const res = await fetch(
+    `${API_BASE_URL}/rag/upload-pdf?user_id=${encodeURIComponent(userId)}`,
+    {
     method: "POST",
     body: formData,
-  });
+    },
+  );
   return handleResponse<PDFUploadResponse>(res);
 }
 
-export async function listPdfs(): Promise<PDFListResponse> {
-  const res = await fetch(`${API_BASE_URL}/rag/pdfs`);
+export async function listPdfs(userId: string): Promise<PDFListResponse> {
+  const res = await fetch(
+    `${API_BASE_URL}/rag/pdfs?user_id=${encodeURIComponent(userId)}`,
+  );
   return handleResponse<PDFListResponse>(res);
 }

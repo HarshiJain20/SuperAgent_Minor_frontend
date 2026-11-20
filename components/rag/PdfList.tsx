@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { listPdfs } from "@/lib/rag-api";
+import { getSupabaseClient } from "@/lib/supabase";
 import type { PDFListItem } from "@/types/rag";
 import { FileText, Loader2, Inbox } from "lucide-react";
 
@@ -10,11 +11,11 @@ export function PdfList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchPdfs = useCallback(async () => {
+  const fetchPdfs = useCallback(async (userId: string) => {
     setLoading(true);
     setError(null);
     try {
-      const data = await listPdfs();
+      const data = await listPdfs(userId);
       setPdfs(data.pdfs);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load PDFs");
@@ -24,8 +25,30 @@ export function PdfList() {
   }, []);
 
   useEffect(() => {
-    fetchPdfs();
+    let active = true;
+    void getSupabaseClient()
+      .auth.getUser()
+      .then(({ data, error }) => {
+        if (error) throw error;
+        if (active && data.user) return fetchPdfs(data.user.id);
+        return undefined;
+      })
+      .catch((caught: unknown) => {
+        if (active) {
+          setError(caught instanceof Error ? caught.message : "Failed to load PDFs");
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
   }, [fetchPdfs]);
+
+  const retry = async () => {
+    const { data } = await getSupabaseClient().auth.getUser();
+    if (data.user) await fetchPdfs(data.user.id);
+  };
 
   // Loading skeleton
   if (loading) {
@@ -43,7 +66,7 @@ export function PdfList() {
       <div className="rounded-xl border border-border bg-card p-6 text-center">
         <p className="text-sm text-red-600">{error}</p>
         <button
-          onClick={fetchPdfs}
+          onClick={() => void retry()}
           className="mt-3 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
         >
           Retry

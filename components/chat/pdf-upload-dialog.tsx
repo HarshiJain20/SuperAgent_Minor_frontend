@@ -9,6 +9,7 @@ type UploadStatus = "preview" | "uploading" | "success" | "error";
 
 interface PdfUploadDialogProps {
   file: File;
+  userId: string;
   onClose: () => void;
 }
 
@@ -18,7 +19,7 @@ function formatFileSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export function PdfUploadDialog({ file, onClose }: PdfUploadDialogProps) {
+export function PdfUploadDialog({ file, userId, onClose }: PdfUploadDialogProps) {
   const [status, setStatus] = useState<UploadStatus>("preview");
   const [chunks, setChunks] = useState(0);
   const [errorMsg, setErrorMsg] = useState("");
@@ -28,7 +29,7 @@ export function PdfUploadDialog({ file, onClose }: PdfUploadDialogProps) {
     setErrorMsg("");
 
     try {
-      const result = await uploadPdf(file);
+      const result = await uploadPdf(file, userId);
       setChunks(result.num_chunks);
       setStatus("success");
 
@@ -40,7 +41,7 @@ export function PdfUploadDialog({ file, onClose }: PdfUploadDialogProps) {
       setErrorMsg(err instanceof Error ? err.message : "Upload failed");
       setStatus("error");
     }
-  }, [file, onClose]);
+  }, [file, onClose, userId]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">

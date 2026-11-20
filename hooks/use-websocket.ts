@@ -17,11 +17,15 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
   const reconnectTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
   );
+  const connectRef = useRef<() => void>(() => undefined);
   const reconnectAttempts = useRef(0);
   const onEventRef = useRef(onEvent);
-  onEventRef.current = onEvent;
 
   const [status, setStatus] = useState<ConnectionStatus>("disconnected");
+
+  useEffect(() => {
+    onEventRef.current = onEvent;
+  }, [onEvent]);
 
   const connect = useCallback(() => {
     // Don't connect if already connected or connecting
@@ -58,7 +62,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
       const delay = Math.min(1000 * 2 ** reconnectAttempts.current, 10000);
       reconnectAttempts.current += 1;
       reconnectTimeout.current = setTimeout(() => {
-        connect();
+        connectRef.current();
       }, delay);
     };
 
@@ -68,6 +72,10 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
 
     wsRef.current = ws;
   }, []);
+
+  useEffect(() => {
+    connectRef.current = connect;
+  }, [connect]);
 
   const disconnect = useCallback(() => {
     if (reconnectTimeout.current) {
@@ -109,7 +117,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
 
   useEffect(() => {
     if (autoConnect) {
-      connect();
+      queueMicrotask(connect);
     }
 
     return () => {
